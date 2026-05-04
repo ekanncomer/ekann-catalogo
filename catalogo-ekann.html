@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EKANN — Accesorios para Grúa</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --or:#F97316;--or2:#ea6a0a;--or-gl:rgba(249,115,22,.13);
+  --bg:#0d0d0d;--s1:#141414;--s2:#1a1a1a;--s3:#202020;
+  --b1:#252525;--b2:#303030;
+  --tx:#f0f0f0;--mu:#666;--mu2:#888;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Barlow',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--s1);border-bottom:1px solid var(--b1);padding:0 18px;height:54px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.14em;color:var(--or);flex-shrink:0}
+.search-wrap{flex:1;max-width:460px;position:relative}
+.sico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:14px;pointer-events:none}
+.search{width:100%;background:var(--s2);border:1px solid var(--b1);color:var(--tx);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px 8px 34px;border-radius:999px;outline:none;transition:border-color .2s}
+.search:focus{border-color:var(--or)}
+.search::placeholder{color:var(--mu)}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cnt{font-size:12px;color:var(--mu2);white-space:nowrap}
+.btn-wa{background:var(--or);color:#fff;border:none;border-radius:999px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .15s;flex-shrink:0}
+.btn-wa:hover{background:var(--or2)}
+
+/* BODY */
+.body{display:flex;flex:1;min-height:0;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);overflow-y:auto;padding:8px 0;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
+.sg-title{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--mu);padding:10px 14px 5px}
+.sitem{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--mu2);border-left:2px solid transparent;transition:all .12s;gap:6px}
+.sitem:hover{background:var(--s2);color:var(--tx)}
+.sitem.on{background:var(--or-gl);color:var(--or);border-left-color:var(--or);font-weight:700}
+.sitem-ico{flex-shrink:0;font-size:14px}
+.sitem-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scount{font-size:10px;background:var(--b1);padding:1px 6px;border-radius:999px;color:var(--mu);flex-shrink:0}
+.sitem.on .scount{background:rgba(249,115,22,.2);color:var(--or)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+/* FILTER BAR */
+.fbar{background:var(--s1);border-bottom:1px solid var(--b1);padding:8px 16px;display:flex;align-items:center;gap:7px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.fbar::-webkit-scrollbar{display:none}
+.flbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--b1);color:var(--mu2);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.chip:hover{border-color:var(--or);color:var(--or)}
+.chip.on{background:var(--or);border-color:var(--or);color:#fff}
+.chip-x{display:none;align-items:center;gap:4px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.28);color:#ef4444;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;text-transform:uppercase;letter-spacing:.04em}
+.chip-x:hover{background:rgba(239,68,68,.18)}
+.chip-x.show{display:inline-flex}
+
+/* GRID */
+.gw{flex:1;overflow-y:auto;padding:16px;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.gw::-webkit-scrollbar{width:5px}
+.gw::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+
+/* CARD */
+.pc{background:var(--s2);border:1px solid var(--b1);border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:border-color .18s,transform .18s,box-shadow .18s}
+.pc:hover{border-color:var(--or);transform:translateY(-3px);box-shadow:0 10px 28px rgba(249,115,22,.1)}
+.pc-img{aspect-ratio:1;background:var(--s3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;position:relative}
+.pc-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.pc:hover .pc-img img{transform:scale(1.06)}
+.noimg{font-size:36px;opacity:.1}
+.cat-tag{position:absolute;top:7px;left:7px;background:rgba(0,0,0,.62);backdrop-filter:blur(4px);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--or);padding:3px 7px;border-radius:999px}
+.pc-body{padding:11px;flex:1;display:flex;flex-direction:column;gap:2px}
+.pc-marca{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
+.pc-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff;line-height:1.2}
+.pc-sku{font-size:10px;color:var(--mu);font-weight:600;letter-spacing:.04em}
+.pc-spec{font-size:11px;color:var(--mu2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
+.pc-foot{margin-top:auto;padding-top:9px;display:flex;align-items:center;justify-content:space-between}
+.pc-stag{font-size:10px;color:var(--mu)}
+.btn-ver{background:transparent;border:1px solid var(--b2);color:var(--mu2);border-radius:999px;font-size:10px;font-weight:700;padding:4px 11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;transition:all .15s}
+.pc:hover .btn-ver{border-color:var(--or);color:var(--or)}
+
+/* EMPTY/LOADING */
+.empty,.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--mu);padding:40px}
+.e-ico{font-size:44px;opacity:.25}
+.e-t{font-size:15px;font-weight:600}
+.e-s{font-size:13px}
+.spin{width:30px;height:30px;border:2px solid var(--b2);border-top-color:var(--or);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0);backdrop-filter:blur(0px);justify-content:center;align-items:flex-start;padding:36px 14px;overflow-y:auto}
+.mbg.open{display:flex;animation:bgi .22s forwards}
+@keyframes bgi{to{background:rgba(0,0,0,.8);backdrop-filter:blur(8px)}}
+.modal{background:var(--s2);border:1px solid var(--b1);border-top:2px solid var(--or);border-radius:14px;width:100%;max-width:780px;overflow:hidden;opacity:0;transform:scale(.96) translateY(12px);animation:mi .24s .05s forwards}
+@keyframes mi{to{opacity:1;transform:none}}
+.mgal{background:var(--s3);position:relative}
+.mimg{width:100%;max-height:360px;object-fit:contain;display:block;padding:24px}
+.mnoimg{height:180px;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.1}
+.mthumbs{display:flex;gap:7px;padding:0 18px 14px;overflow-x:auto;scrollbar-width:none}
+.mthumbs::-webkit-scrollbar{display:none}
+.mthumb{width:52px;height:40px;border-radius:6px;overflow:hidden;border:2px solid var(--b1);cursor:pointer;flex-shrink:0;background:var(--s3);transition:border-color .15s}
+.mthumb.on{border-color:var(--or)}
+.mthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.mbody{padding:22px 26px 26px}
+.mtop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+.mmarca{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--or);margin-bottom:4px}
+.mname{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.04em;color:#fff;line-height:1}
+.msku{font-size:11px;color:var(--mu);margin-top:4px;font-weight:600}
+.mclose{background:var(--s3);border:1px solid var(--b1);color:var(--mu);width:32px;height:32px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mclose:hover{border-color:var(--or);color:var(--or)}
+.mcat-tag{display:inline-block;background:var(--or-gl);border:1px solid rgba(249,115,22,.25);color:var(--or);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:12px}
+.mdesc{font-size:14px;color:#aaa;line-height:1.7;margin-bottom:16px}
+.msec-t{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mu);margin-bottom:9px}
+.mspecs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+.mspec{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:#d0d0d0;background:var(--s3);padding:7px 10px;border-radius:8px}
+.msdot{color:var(--or);flex-shrink:0;font-size:10px;margin-top:2px}
+.mvids{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.mvlink{display:inline-flex;align-items:center;gap:6px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:8px 14px;text-decoration:none;color:var(--tx);font-size:13px;font-weight:600;transition:border-color .15s,color .15s}
+.mvlink:hover{border-color:var(--or);color:var(--or)}
+.mactions{margin-top:6px}
+.btn-wa2{display:inline-flex;align-items:center;gap:7px;background:#25D366;color:#fff;border:none;border-radius:999px;padding:11px 22px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:opacity .15s}
+.btn-wa2:hover{opacity:.88}
+
+/* MOBILE */
+@media(max-width:800px){
+  html,body{overflow:auto;height:auto}
+  #app{height:auto;min-height:100vh}
+  .body{flex-direction:column;overflow:visible}
+  .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--b1);overflow:visible;padding:8px 0 4px}
+  .main{overflow:visible}
+  .gw{overflow:visible;padding:12px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .mspecs{grid-template-columns:1fr}
+  .mbody{padding:16px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="brand">EKANN</div>
+    <div class="search-wrap">
+      <span class="sico">🔍</span>
+      <input class="search" id="q" type="text" placeholder="Buscar accesorio, código, marca..." autocomplete="off">
+    </div>
+    <div class="topbar-r">
+      <span class="cnt" id="cnt"></span>
+      <a class="btn-wa" href="https://wa.me/523316188715" target="_blank">💬 Cotizar</a>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="fbar">
+        <div class="flbl">Marca</div>
+        <div id="bchips"></div>
+        <div class="chip-x" id="chip-x" onclick="clearAll()">✕ Limpiar filtros</div>
+      </div>
+      <div class="gw" id="gw">
+        <div class="loading"><div class="spin"></div>Cargando catálogo...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mbg" id="mbg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mgal" id="mgal"></div>
+    <div class="mbody">
+      <div class="mtop">
+        <div>
+          <div class="mmarca" id="mmarca"></div>
+          <div class="mname"  id="mname"></div>
+          <div class="msku"   id="msku"></div>
+        </div>
+        <button class="mclose" onclick="closeModal()">×</button>
+      </div>
+      <div class="mcat-tag" id="mcat"></div>
+      <div class="mdesc" id="mdesc"></div>
+      <div id="mspecs-wrap"></div>
+      <div id="mvids-wrap"></div>
+      <div class="mactions"><a class="btn-wa2" id="mwa" href="#" target="_blank">💬 Solicitar cotización</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Firebase — PON TU CONFIG ──────────────────────────────────────────────────
+const FC={apiKey:"AIzaSyBTTdGLKEbCl3iBPk16W4ace7VUewksbhc",authDomain:"ekann-catalogo.firebaseapp.com",projectId:"ekann-catalogo",storageBucket:"ekann-catalogo.firebasestorage.app",messagingSenderId:"227325397906",appId:"1:227325397906:web:c61a335f6501c315718f4b"};
+firebase.initializeApp(FC);
+const db=firebase.firestore();
+
+let ALL=[],CAT='all',BRD='all',Q='';
+const ICONS={'Accesorios Eléctricos':'⚡','Accesorios para Camión':'🚛','Bandas y Eslingas de Carga':'🟡','Bandas y Matracas':'🔧','Cables':'🔩','Cadenas':'⛓️','Dollys':'🔄','Ganchos':'🪝','Iluminación LED':'💡','Peras':'🔗','Refacciones Hidráulicas':'⚙️','Refacciones y Aditamentos':'🛠️','Torretas':'🚨','Winch':'🏗️'};
+
+async function load(){
+  try{
+    const s=await db.collection('ekann-catalogo').orderBy('categoria').orderBy('nombre').get();
+    ALL=s.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.activo!==false);
+    buildSidebar(); buildBrands(); apply();
+  }catch(err){
+    document.getElementById('gw').innerHTML=`<div class="empty"><div class="e-ico">⚠️</div><div class="e-t">Error al cargar</div><div class="e-s">${err.message}</div></div>`;
+  }
+}
+
+function buildSidebar(){
+  const cats=[...new Set(ALL.map(p=>p.categoria||'Otros'))].sort();
+  const cc={}; ALL.forEach(p=>{const c=p.categoria||'Otros';cc[c]=(cc[c]||0)+1;});
+  document.getElementById('sidebar').innerHTML=
+    `<div class="sg-title">Categorías</div>` +
+    `<div class="sitem on" data-c="all" onclick="setCat('all',this)"><span class="sitem-ico">🏷️</span><span class="sitem-name">Todos</span><span class="scount">${ALL.length}</span></div>` +
+    cats.map(c=>`<div class="sitem" data-c="${e(c)}" onclick="setCat('${e(c)}',this)"><span class="sitem-ico">${ICONS[c]||'📦'}</span><span class="sitem-name">${e(c)}</span><span class="scount">${cc[c]}</span></div>`).join('');
+}
+
+function buildBrands(){
+  const brands=[...new Set(ALL.map(p=>p.marca).filter(Boolean))].sort();
+  document.getElementById('bchips').innerHTML=
+    `<div class="chip on" data-b="all" onclick="setBrd('all',this)">Todas</div>`+
+    brands.map(b=>`<div class="chip" data-b="${e(b)}" onclick="setBrd('${e(b)}',this)">${e(b)}</div>`).join('');
+}
+
+function setCat(c,el){
+  CAT=c;
+  document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle('on',x.dataset.c===c));
+  apply();
+}
+function setBrd(b,el){
+  BRD=b;
+  document.querySelectorAll('.chip[data-b]').forEach(x=>x.classList.toggle('on',x.dataset.b===b));
+  updX(); apply();
+}
+function clearAll(){
+  CAT='all';BRD='all';Q='';
+  document.getElementById('q').value='';
+  document.querySelectorAll('.sitem').forEach(x=>x.classList.toggle('on',x.dataset.c==='all'));
+  document.querySelectorAll('.chip[data-b]').forEach(x=>x.classList.toggle('on',x.dataset.b==='all'));
+  updX(); apply();
+}
+function updX(){document.getElementById('chip-x').classList.toggle('show',CAT!=='all'||BRD!=='all'||!!Q);}
+
+function apply(){
+  const q=Q.toLowerCase();
+  const res=ALL.filter(p=>{
+    if(CAT!=='all'&&(p.categoria||'Otros')!==CAT)return false;
+    if(BRD!=='all'&&p.marca!==BRD)return false;
+    if(q&&![p.nombre,p.marca,p.sku,p.categoria,p.descripcion,...(p.caracteristicas||[])].join(' ').toLowerCase().includes(q))return false;
+    return true;
+  });
+  document.getElementById('cnt').textContent=`${res.length} producto${res.length!==1?'s':''}`;
+  const gw=document.getElementById('gw');
+  if(!res.length){gw.innerHTML='<div class="empty"><div class="e-ico">🔍</div><div class="e-t">Sin resultados</div><div class="e-s">Prueba otros filtros</div></div>';return;}
+  gw.innerHTML=`<div class="grid">${res.map(p=>{
+    const img=p.imagenes&&p.imagenes[0]?`<img src="${e(p.imagenes[0])}" alt="${e(p.nombre)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=noimg>📦</span>'">`:'<span class="noimg">📦</span>';
+    const sp=(p.caracteristicas||[]).slice(0,2).join(' · ');
+    return`<div class="pc" onclick="openModal('${e(p.id)}')">
+      <div class="pc-img">${img}<div class="cat-tag">${e(p.categoria||'')}</div></div>
+      <div class="pc-body">
+        ${p.marca?`<div class="pc-marca">${e(p.marca)}</div>`:''}
+        <div class="pc-name">${e(p.nombre||'—')}</div>
+        ${p.sku?`<div class="pc-sku">${e(p.sku)}</div>`:''}
+        ${sp?`<div class="pc-spec">${e(sp)}</div>`:''}
+        <div class="pc-foot"><span class="pc-stag">${(p.caracteristicas||[]).length} specs</span><button class="btn-ver">Ver más</button></div>
+      </div></div>`;
+  }).join('')}</div>`;
+}
+
+let st;
+document.getElementById('q').addEventListener('input',ev=>{clearTimeout(st);st=setTimeout(()=>{Q=ev.target.value.trim();updX();apply();},200);});
+
+function openModal(id){
+  const p=ALL.find(x=>x.id===id);if(!p)return;
+  const imgs=p.imagenes||[];
+  document.getElementById('mgal').innerHTML=imgs.length
+    ?`<img class="mimg" id="mimg" src="${e(imgs[0])}" alt="${e(p.nombre)}" onerror="this.style.opacity='.1'">${imgs.length>1?`<div class="mthumbs">${imgs.map((u,i)=>`<div class="mthumb${i===0?' on':''}" onclick="setImg(${i},'${e(u)}')"><img src="${e(u)}" loading="lazy"></div>`).join('')}</div>`:''}`
+    :'<div class="mnoimg">📦</div>';
+  document.getElementById('mmarca').textContent=p.marca||'';
+  document.getElementById('mname').textContent=p.nombre||'—';
+  document.getElementById('msku').textContent=p.sku?`Código: ${p.sku}`:'';
+  document.getElementById('mcat').textContent=p.categoria||'';
+  document.getElementById('mdesc').textContent=p.descripcion||'';
+  const specs=p.caracteristicas||[];
+  document.getElementById('mspecs-wrap').innerHTML=specs.length?`<div class="msec-t">Especificaciones</div><div class="mspecs">${specs.map(s=>`<div class="mspec"><span class="msdot">▸</span>${e(s)}</div>`).join('')}</div>`:'';
+  const vids=p.videos||[];
+  document.getElementById('mvids-wrap').innerHTML=vids.length?`<div class="msec-t">Videos</div><div class="mvids">${vids.map((u,i)=>`<a class="mvlink" href="${e(u)}" target="_blank" rel="noopener">▶ Video${vids.length>1?' '+(i+1):''}</a>`).join('')}</div>`:'';
+  const txt=encodeURIComponent(`Hola, me interesa: ${p.nombre}${p.sku?' ('+p.sku+')':''}`);
+  document.getElementById('mwa').href=`https://wa.me/523316188715?text=${txt}`;
+  document.getElementById('mbg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function setImg(i,url){document.getElementById('mimg').src=url;document.querySelectorAll('.mthumb').forEach((t,j)=>t.classList.toggle('on',j===i));}
+function closeModal(){document.getElementById('mbg').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeModal();});
+function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+load();
+</script>
+</body>
+</html>
